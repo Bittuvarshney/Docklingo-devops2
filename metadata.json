@@ -1,0 +1,6 @@
+{
+  "name": "Document Translator & Summarizer",
+  "description": "AI-powered document translator and summarizer that preserves original formatting and tracks document history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

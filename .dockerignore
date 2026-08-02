@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log*
+dist
+.git
+.gitignore
+.env
+.env.*
+.vite
+coverage
+Dockerfile
+README.md
