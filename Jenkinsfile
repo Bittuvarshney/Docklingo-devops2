@@ -103,6 +103,14 @@ stage('Terraform Apply') {
         '''
     }
 }
+stage('Ansible Configuration') {
+    steps {
+        sh '''
+            cd /home/ubuntu/ansible
+            ansible-playbook -i inventory playbook.yml
+        '''
+    }
+}
 
         stage('Deploy to Kubernetes') {
             steps {
