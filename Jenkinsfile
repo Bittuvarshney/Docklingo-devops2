@@ -1,80 +1,132 @@
+
 pipeline {
-agent any
+    agent any
 
-
-environment {
-    IMAGE_NAME = 'bittoovarshney/linguify-app'
-    IMAGE_TAG = "${BUILD_NUMBER}"
-}
-
-stages {
-
-    stage('Checkout') {
-        steps {
-            checkout scm
-        }
+    environment {
+        IMAGE_NAME = 'bittoovarshney/linguify-app'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        K8S_DEPLOYMENT = 'linguify-app'
+        K8S_CONTAINER = 'linguify-app'
     }
 
-    stage('Install Dependencies') {
-        steps {
-            sh 'npm ci'
-        }
-    }
+    stages {
 
-    stage('Lint') {
-        steps {
-            sh 'npm run lint'
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-    }
 
-    stage('Build Application') {
-        steps {
-            sh 'npm run build'
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm ci'
+            }
         }
-    }
 
-    stage('Build Docker Image') {
-        steps {
-            sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-            sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+        stage('Lint') {
+            steps {
+                sh 'npm run lint'
+            }
         }
-    }
 
-    stage('Docker Login') {
-        steps {
-            withCredentials([
-                usernamePassword(
-                    credentialsId: 'dockerhub-credentials',
-                    usernameVariable: 'DOCKER_USERNAME',
-                    passwordVariable: 'DOCKER_PASSWORD'
-                )
-            ]) {
-                sh '''
-                    echo "$DOCKER_PASSWORD" | docker login \
-                    -u "$DOCKER_USERNAME" \
-                    --password-stdin
-                '''
+        stage('Build Application') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                        -u "$DOCKER_USERNAME" \
+                        --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                sh "docker push ${IMAGE_NAME}:latest"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo "Deploying ${IMAGE_NAME}:${IMAGE_TAG} to Kubernetes..."
+
+                sh """
+                    kubectl set image deployment/${K8S_DEPLOYMENT} \
+                    ${K8S_CONTAINER}=${IMAGE_NAME}:${IMAGE_TAG}
+                """
+            }
+        }
+
+        stage('Kubernetes Rollout') {
+            steps {
+                echo "Waiting for Kubernetes rollout..."
+
+                sh """
+                    kubectl rollout status deployment/${K8S_DEPLOYMENT} \
+                    --timeout=180s
+                """
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh 'kubectl get deployment'
+                sh 'kubectl get pods -o wide'
+                sh 'kubectl get svc'
             }
         }
     }
 
-    stage('Push to Docker Hub') {
-        steps {
-            sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
-            sh "docker push ${IMAGE_NAME}:latest"
+    post {
+
+        success {
+            echo '''
+            ==========================================
+            GitHub
+                ↓
+            Jenkins
+                ↓
+            Docker Build
+                ↓
+            Docker Hub
+                ↓
+            Kubernetes
+                ↓
+            Linguify Deployment
+            ==========================================
+            CI/CD PIPELINE SUCCESSFUL!
+            ==========================================
+            '''
+        }
+
+        failure {
+            echo 'Pipeline failed. Check Console Output.'
+        }
+
+        always {
+            sh 'docker logout || true'
         }
     }
 }
 
-post {
-    success {
-        echo "GitHub -> Jenkins -> Docker -> Docker Hub SUCCESS!"
-    }
-
-    failure {
-        echo "Pipeline failed. Check Console Output."
-    }
-}
-
-
-}
