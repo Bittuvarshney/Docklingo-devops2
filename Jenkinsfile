@@ -95,7 +95,7 @@ stage('Terraform Plan') {
 }
 stage('Terraform Apply') {
     steps {
-        input message: 'Terraform Apply karna hai?', ok: 'Apply'
+       
         
         sh '''
             cd /home/ubuntu/terraform-aws
