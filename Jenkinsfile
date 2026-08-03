@@ -93,6 +93,16 @@ stage('Terraform Plan') {
         '''
     }
 }
+stage('Terraform Apply') {
+    steps {
+        input message: 'Terraform Apply karna hai?', ok: 'Apply'
+        
+        sh '''
+            cd /home/ubuntu/terraform-aws
+            terraform apply -input=false -auto-approve
+        '''
+    }
+}
 
         stage('Deploy to Kubernetes') {
             steps {
