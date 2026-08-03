@@ -67,6 +67,33 @@ pipeline {
             }
         }
 
+        stage('Terraform Init') {
+    steps {
+        sh '''
+            cd /home/ubuntu/terraform-aws
+            terraform init -input=false
+        '''
+    }
+}
+
+stage('Terraform Validate') {
+    steps {
+        sh '''
+            cd /home/ubuntu/terraform-aws
+            terraform validate
+        '''
+    }
+}
+
+stage('Terraform Plan') {
+    steps {
+        sh '''
+            cd /home/ubuntu/terraform-aws
+            terraform plan -input=false
+        '''
+    }
+}
+
         stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying ${IMAGE_NAME}:${IMAGE_TAG} to Kubernetes..."
