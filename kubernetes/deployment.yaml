@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linguify-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: linguify-app
+  template:
+    metadata:
+      labels:
+        app: linguify-app
+    spec:
+      containers:
+        - name: linguify-app
+          image: bittoovarshney/linguify-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"

@@ -1,0 +1,37 @@
+grafana:
+  service:
+    type: NodePort
+    nodePort: 31559
+
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'bittuvarshney8650553939@gmail.com'
+      smtp_auth_username: 'bittuvarshney8650553939@gmail.com'
+      smtp_auth_password_file: '/etc/alertmanager/secrets/alertmanager-email/password'
+
+    route:
+      group_by:
+        - namespace
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'email'
+      routes:
+        - matchers:
+            - alertname = "Watchdog"
+          receiver: 'null'
+
+    receivers:
+      - name: 'null'
+
+      - name: 'email'
+        email_configs:
+          - to: 'bittuvarshney8650553939@gmail.com'
+            send_resolved: true
+
+  alertmanagerSpec:
+    secrets:
+      - alertmanager-email

@@ -1,0 +1,28 @@
+---
+- name: Configure Linguify DevOps Server
+  hosts: all
+  become: yes
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Check Docker
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Show Docker version
+      debug:
+        var: docker_version.stdout
+
+    - name: Check Kubernetes
+      command: kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml get nodes
+      register: kubernetes_nodes
+      changed_when: false
+
+    - name: Show Kubernetes nodes
+      debug:
+        var: kubernetes_nodes.stdout

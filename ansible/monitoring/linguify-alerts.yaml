@@ -1,0 +1,40 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: linguify-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: linguify.rules
+      rules:
+        - alert: LinguifyDeploymentReplicasUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="default",deployment="linguify-app"} < 2
+          for: 2m
+          labels:
+            severity: critical
+            app: linguify
+          annotations:
+            summary: "Linguify deployment has unavailable replicas"
+            description: "Linguify deployment has less than 2 available replicas."
+
+        - alert: LinguifyPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="default",pod=~"linguify-app-.*"}[10m]) > 0
+          for: 2m
+          labels:
+            severity: warning
+            app: linguify
+          annotations:
+            summary: "Linguify pod restarted"
+            description: "A Linguify container has restarted during the last 10 minutes."
+
+        - alert: LinguifyPodNotReady
+          expr: kube_pod_status_ready{namespace="default",pod=~"linguify-app-.*",condition="true"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            app: linguify
+          annotations:
+            summary: "Linguify pod is not ready"
+            description: "A Linguify pod has been not ready for more than 2 minutes."
