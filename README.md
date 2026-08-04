@@ -1,20 +1,120 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# 🚀 Docklingo – DevOps CI/CD Project
 
-# Run and deploy your AI Studio app
+Docklingo is a document-based web application deployed using a complete
+DevOps and Cloud-Native workflow.
 
-This contains everything you need to run your app locally.
+This project implements CI/CD, containerization, Kubernetes orchestration,
+Infrastructure as Code, configuration management, monitoring and alerting.
 
-View your app in AI Studio: https://ai.studio/apps/57e83da2-dd1d-45e1-a2b5-5231fd8952c1
+---
 
-## Run Locally
+## 📌 Project Overview
 
-**Prerequisites:**  Node.js
+The complete deployment pipeline is automated using:
+
+- GitHub
+- Jenkins
+- Docker
+- DockerHub
+- Kubernetes (K3s)
+- Terraform
+- Ansible
+- Prometheus
+- Grafana
+- Alertmanager
+- Traefik
+
+Whenever code is pushed to GitHub, a webhook triggers Jenkins.
+Jenkins builds the application, creates a Docker image and deploys the
+application to Kubernetes.
+
+The Kubernetes cluster is monitored using Prometheus and Grafana.
+Alertmanager sends email notifications when configured alerts are triggered.
+
+---
+
+# 🏗️ Architecture
+
+```text
+                    ┌──────────────────┐
+                    │    Developer     │
+                    │   Code Changes   │
+                    └────────┬─────────┘
+                             │
+                             │ git push
+                             ▼
+                    ┌──────────────────┐
+                    │      GitHub      │
+                    │   Repository     │
+                    └────────┬─────────┘
+                             │
+                             │ Webhook
+                             ▼
+                    ┌──────────────────┐
+                    │     Jenkins      │
+                    │    CI / CD       │
+                    └────────┬─────────┘
+                             │
+                             │ Build
+                             ▼
+                    ┌──────────────────┐
+                    │      Docker      │
+                    │   Build Image    │
+                    └────────┬─────────┘
+                             │
+                             │ Push
+                             ▼
+                    ┌──────────────────┐
+                    │    DockerHub     │
+                    │  Image Registry  │
+                    └────────┬─────────┘
+                             │
+                             │ Pull Image
+                             ▼
+              ┌─────────────────────────────┐
+              │       Kubernetes / K3s     │
+              │                             │
+              │   ┌─────────────────────┐   │
+              │   │ Linguify Deployment │   │
+              │   │                     │   │
+              │   │  Replica 1          │   │
+              │   │  Replica 2          │   │
+              │   └──────────┬──────────┘   │
+              │              │              │
+              │        ┌─────▼─────┐        │
+              │        │  Service  │        │
+              │        └─────┬─────┘        │
+              │              │              │
+              │        ┌─────▼─────┐        │
+              │        │  Traefik  │        │
+              │        │  Ingress  │        │
+              │        └───────────┘        │
+              └─────────────────────────────┘
+                             │
+                             │ Metrics
+                             ▼
+                    ┌──────────────────┐
+                    │    Prometheus    │
+                    │    Monitoring    │
+                    └────────┬─────────┘
+                             │
+                   ┌─────────┴─────────┐
+                   │                   │
+                   ▼                   ▼
+          ┌─────────────────┐  ┌─────────────────┐
+          │     Grafana     │  │   Alertmanager  │
+          │    Dashboards   │  │ Email Alerts    │
+          └─────────────────┘  └─────────────────┘
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+       Infrastructure / Configuration Layer
+
+             ┌──────────────┐
+             │   Terraform  │
+             │   AWS IaC    │
+             └──────────────┘
+
+             ┌──────────────┐
+             │   Ansible    │
+             │ Configuration│
+             └──────────────┘
